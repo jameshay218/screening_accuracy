@@ -118,8 +118,8 @@ shinyUI(
     ),
              # Show a plot of the generated distribution
              mainPanel(
-                 helpText("Due to memory constraints, this part of the simulation cannot be run online. Please download the github repository containing this code and run the app locally, following the instructions on the github README.")
-                 #plotOutput("linelist_plot",width="100%")
+                 #helpText("Due to memory constraints, this part of the simulation cannot be run online. Please download the github repository containing this code and run the app locally, following the instructions on the github README.")
+                 plotOutput("linelist_plot",width="100%")
              )
     ),  
     tabPanel("Test characteristics",
