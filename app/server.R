@@ -540,7 +540,7 @@ shinyServer(function(input, output) {
     },height=1200,width=800)
     
     output$linelist_plot <- renderPlot({
-        
+        print(gc())
         parameters <- reactiveValuesToList(input)
         growth_rate <- parameters$growth_rate
         ## Simulation duration
@@ -611,7 +611,8 @@ shinyServer(function(input, output) {
         ## Subsample the linelist to improve simulation speed
         sim_dat_linelist <- sim_dat_linelist %>% 
             sample_frac(subsamp_frac) %>%  mutate(i=1:n())
-        
+        print(nrow(sim_dat_linelist))
+        print(gc())
         ## =====================
         ## Individual entries
         ## =====================
@@ -667,7 +668,6 @@ shinyServer(function(input, output) {
             dplyr::select(i, first_detection,first_detection_correct)
         
         infection_statuses_surveillance_linelist <- infection_statuses_linelist %>% left_join(first_detection_dat)
-        
         ## =====================
         ## Now tally prevalence etc over time
         ## =====================
@@ -716,7 +716,6 @@ shinyServer(function(input, output) {
             mutate(value=value/subsamp_frac)
         pcr_surveillance_tally$Status <- factor(pcr_surveillance_tally$Status,
                                                 levels=status_levels) 
-        
         ## =====================
         ## LFT
         ## =====================
@@ -751,7 +750,6 @@ shinyServer(function(input, output) {
             mutate(value=value/subsamp_frac)
         lft_surveillance_tally$Status <- factor(lft_surveillance_tally$Status,
                                                 levels=status_levels) 
-        
         ## =====================
         ## LFT repeated testing strategy
         ## =====================
@@ -785,7 +783,6 @@ shinyServer(function(input, output) {
                    Status=ifelse(!is.na(first_detection) & t > first_detection & first_detection_correct=="True positive" & t <= first_detection + isolation_period,"Correctly\n isolating",Status),
                    Status=ifelse(!is.na(first_detection) & t > first_detection & first_detection_correct=="False positive" & t <= first_detection + isolation_period,"Incorrectly\n isolating",Status)
             )
-        
         ## Pull out only those who have been infected post burn in
         positive_infection_statuses_lft_surveillance <-  infection_statuses_lft_surveillance %>%
             filter(!is.na(inf_time), inf_time >= burnin) %>%
@@ -833,8 +830,6 @@ shinyServer(function(input, output) {
         bind_rows(lft_surveillance_tally, pcr_surveillance_tally, lft_repeat_tally) %>% filter(!(Status %in% c("True negative/\nPost infection","Recovered","True negative/\nRecovered","Not tested"))) %>%
             pull(value) %>% max() -> ymax_counts
         ymax_counts <- ceiling(ymax_counts/1000)*1000
-        
-        print(ymax_counts)
         
         p_pcr_left <- ggplot(pcr_surveillance_tally %>% filter(Status != "True negative/\nRecovered")) +
             geom_bar(aes(x=Status,y=value,fill=Status),stat="identity",col="grey10") +
